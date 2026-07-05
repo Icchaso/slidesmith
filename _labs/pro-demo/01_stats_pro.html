@@ -1,0 +1,168 @@
+<link rel="stylesheet" href="../../core/base.css">
+<link rel="stylesheet" href="../../themes/pop.css">
+<style>
+/* ============ PRO級デモ: 図解 × ジャンプ率 × レイヤー ============ */
+
+/* --- レイヤー1: 背景（ドット紙 + 透かしタイポ） --- */
+.bg-dots {
+  inset: 0;
+  background-image: radial-gradient(rgba(43,35,80,0.10) 2.5px, transparent 2.5px);
+  background-size: 44px 44px;
+}
+.ghost-type {
+  right: -30px; bottom: -58px;
+  font-family: var(--font-display); font-weight: 900;
+  font-size: 380px; line-height: 1; letter-spacing: -0.02em;
+  color: transparent; -webkit-text-stroke: 3px rgba(43,35,80,0.10);
+}
+
+/* --- レイヤー2: 左＝語り / 右＝図解 の非対称グリッド --- */
+.pro-grid {
+  position: absolute; left: 128px; right: 118px; top: 118px; bottom: 128px;
+  display: grid; grid-template-columns: 620px 1fr; gap: 84px; align-items: center;
+}
+
+/* 左: 語りの階段（大→中→小のジャンプ率） */
+.story .kicker {
+  display: flex; align-items: center; gap: 16px;
+  font-size: 25px; font-weight: 800; letter-spacing: 0.22em; color: var(--accent);
+}
+.story .kicker::before { content: ""; width: 40px; height: 6px; background: var(--accent); border-radius: 3px; }
+.story h2 {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: 84px; line-height: 1.22; color: var(--ink); margin-top: 30px;
+}
+.story h2 em {
+  font-style: normal; color: inherit;
+  background: linear-gradient(transparent 58%, var(--accent-3) 58%, var(--accent-3) 94%, transparent 94%);
+  padding: 0 6px;
+}
+.story .body { font-size: 28px; line-height: 1.75; color: var(--ink-2); margin-top: 34px; max-width: 560px; }
+.story .note {
+  display: inline-flex; align-items: center; gap: 14px;
+  margin-top: 40px; padding: 16px 28px;
+  background: var(--bg-soft); border: 3px solid var(--ink); border-radius: 999px;
+  box-shadow: 6px 6px 0 rgba(43,35,80,0.14);
+  font-size: 23px; font-weight: 800; color: var(--ink);
+}
+.story .note::before { content: "※"; color: var(--accent); font-weight: 900; }
+
+/* 右: ヒーロー図解カード（主役1つ + 脇役2つ） */
+.viz { position: relative; }
+.hero-card {
+  position: relative;
+  background: #fff; border: 4px solid var(--ink); border-radius: 34px;
+  box-shadow: 12px 12px 0 rgba(43,35,80,0.16);
+  padding: 56px 60px 48px; transform: rotate(-1.2deg);
+  display: grid; grid-template-columns: 300px 1fr; gap: 48px; align-items: center;
+}
+.hero-card .sticker {
+  position: absolute; top: -34px; right: 44px; transform: rotate(6deg);
+  background: var(--accent); color: #fff;
+  font-family: var(--font-display); font-size: 24px; font-weight: 900; letter-spacing: 0.08em;
+  padding: 12px 26px; border-radius: 999px; border: 3px solid var(--ink);
+  box-shadow: 5px 5px 0 rgba(43,35,80,0.2);
+}
+.donut { width: 300px; height: 300px; position: relative; }
+.donut svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.donut .in {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center;
+}
+.donut .in .n {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: 86px; line-height: 1; color: var(--ink); letter-spacing: -0.02em;
+}
+.donut .in .n small { font-size: 36px; font-weight: 900; color: var(--accent); }
+.donut .in .l { font-size: 19px; font-weight: 800; color: var(--muted); margin-top: 10px; letter-spacing: 0.16em; }
+.hero-copy .big-label { font-family: var(--font-display); font-size: 34px; font-weight: 900; color: var(--ink); line-height: 1.4; }
+.hero-copy .delta {
+  margin-top: 22px; display: flex; align-items: baseline; gap: 14px;
+  font-family: var(--font-display); font-weight: 900; color: var(--ink);
+}
+.hero-copy .delta .from { font-size: 30px; color: var(--muted); text-decoration: line-through; }
+.hero-copy .delta .arrow { font-size: 30px; color: var(--accent); }
+.hero-copy .delta .to { font-size: 56px; color: var(--accent); }
+.hero-copy .delta-l { font-size: 21px; font-weight: 700; color: var(--muted); margin-top: 8px; letter-spacing: 0.06em; }
+
+/* 脇役: サブ指標チップ 2つ（主役より明確に小さく） */
+.sub-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 44px; }
+.chip {
+  background: var(--bg-soft); border: 3px solid var(--ink); border-radius: 22px;
+  padding: 26px 30px; box-shadow: 6px 6px 0 rgba(43,35,80,0.12);
+  display: flex; align-items: center; gap: 22px;
+}
+.chip .ico {
+  width: 62px; height: 62px; flex: none; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px; border: 3px solid var(--ink);
+}
+.chip:nth-child(1) .ico { background: var(--accent-2); }
+.chip:nth-child(2) .ico { background: var(--accent-3); }
+.chip .v { font-family: var(--font-display); font-size: 40px; font-weight: 900; color: var(--ink); line-height: 1; }
+.chip .v small { font-size: 22px; }
+.chip .k { font-size: 20px; font-weight: 700; color: var(--muted); margin-top: 8px; }
+
+/* 図解への手書き風注釈（レイヤー3: 前景） */
+.annot {
+  position: absolute; left: -8px; top: -64px; transform: rotate(-4deg);
+  font-family: var(--font-display); font-size: 25px; font-weight: 900; color: var(--accent);
+}
+.annot::after {
+  content: ""; position: absolute; left: 46%; top: 40px;
+  width: 3px; height: 30px; background: var(--accent); transform: rotate(20deg); border-radius: 2px;
+}
+</style>
+<div class="slide">
+  <div class="deco bg-dots"></div>
+  <div class="deco ghost-type">×8.4</div>
+
+  <div class="pro-grid">
+    <div class="story">
+      <div class="kicker">RESULTS ── 90 DAYS</div>
+      <h2>継続は、<br><em>数字になる</em>。</h2>
+      <p class="body">センスでも、フォロワー買いでもありません。「型どおりに、週3回」——それだけを90日続けた受講生の平均値です。</p>
+      <div class="note">受講生214名・2025年期の実測データ</div>
+    </div>
+
+    <div class="viz">
+      <div class="annot">主役はこの数字！</div>
+      <div class="hero-card">
+        <div class="sticker">FOLLOWERS</div>
+        <div class="donut">
+          <svg viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="84" fill="none" stroke="#F0EBE0" stroke-width="26"/>
+            <circle cx="100" cy="100" r="84" fill="none" stroke="#FF5D73" stroke-width="26"
+                    stroke-linecap="round" stroke-dasharray="443 528"/>
+          </svg>
+          <div class="in">
+            <div class="n">8.4<small>倍</small></div>
+            <div class="l">成長率</div>
+          </div>
+        </div>
+        <div class="hero-copy">
+          <div class="big-label">平均フォロワー数<br>（開始 → 90日後）</div>
+          <div class="delta">
+            <span class="from">120人</span>
+            <span class="arrow">→</span>
+            <span class="to">1,010<small style="font-size:28px">人</small></span>
+          </div>
+          <div class="delta-l">中央値でも 6.1倍。ゼロ始まりでも再現。</div>
+        </div>
+      </div>
+      <div class="sub-stats">
+        <div class="chip">
+          <div class="ico">⏱</div>
+          <div><div class="v">15<small>分</small></div><div class="k">1投稿の作成時間</div></div>
+        </div>
+        <div class="chip">
+          <div class="ico">🔥</div>
+          <div><div class="v">92<small>%</small></div><div class="k">3ヶ月の継続率</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="brand"><span class="mark"></span>SNS LAB</div>
+  <div class="pageno">05</div>
+</div>
