@@ -18,6 +18,14 @@ const MODEL = "gemini-2.5-flash-image";
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 const CREDENTIALS_PATH = join(homedir(), ".config", "slidesmith", "credentials.json");
 
+/** 無料プロバイダ: Pollinations.ai（キー・課金不要。品質はGeminiに一歩譲る） */
+const FREE_ENDPOINT = "https://image.pollinations.ai/prompt/";
+const AR_SIZE = {
+  "16:9": [1920, 1080], "1:1": [1080, 1080], "3:4": [1080, 1440], "4:3": [1440, 1080],
+  "9:16": [1080, 1920], "3:2": [1620, 1080], "2:3": [1080, 1620], "21:9": [2520, 1080],
+  "5:4": [1350, 1080], "4:5": [1080, 1350],
+};
+
 /** テーマ名 → 画風レシピ（プロンプトに追記する英語スタイル指定） */
 const STYLES = {
   corporate: "clean corporate photography, soft natural light, shallow depth of field, muted navy and teal tones",
@@ -46,8 +54,13 @@ function printHelp() {
 オプション:
   --style <名前>   画風テーマ（--list-styles で一覧表示）
   --ar <比率>      アスペクト比: 16:9 | 1:1 | 3:4 | 4:3 など（既定: ${DEFAULT_AR}）
+  --free           無料プロバイダ（Pollinations.ai）で生成。キー・課金不要
   --list-styles    内蔵スタイル8種を表示
   --help           このヘルプを表示
+
+プロバイダ:
+  既定   Gemini（高品質・要APIキー＋課金設定・1枚約$0.039）
+  --free Pollinations.ai（無料・キー不要。品質は一歩譲るが十分実用的）
 
 例:
   node scripts/genimg.mjs "会議室で談笑するビジネスパーソン" hero.png --style corporate --ar 16:9
@@ -86,11 +99,13 @@ function parseArgs(argv) {
   const positional = [];
   let style = null;
   let ar = DEFAULT_AR;
+  let free = false;
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--help" || a === "-h") return { mode: "help" };
     if (a === "--list-styles") return { mode: "list-styles" };
+    if (a === "--free") { free = true; continue; }
     if (a === "--style") {
       style = argv[++i];
       if (!style) fail("--style にテーマ名を指定してください（--list-styles で一覧表示）");
@@ -115,7 +130,7 @@ function parseArgs(argv) {
     fail(`未対応のアスペクト比: ${ar}\n利用可能: ${SUPPORTED_AR.join(", ")}`);
   }
 
-  return { mode: "generate", prompt: positional[0], outPath: resolve(positional[1]), style, ar };
+  return { mode: "generate", prompt: positional[0], outPath: resolve(positional[1]), style, ar, free };
 }
 
 function fail(message) {
@@ -192,6 +207,47 @@ function extractImage(data) {
   return imagePart.inlineData;
 }
 
+/** 無料プロバイダ（Pollinations.ai）での生成 */
+async function generateFree({ prompt, outPath, style, ar }) {
+  const fullPrompt = buildPrompt(prompt, style);
+  const [width, height] = AR_SIZE[ar];
+  const seed = Math.floor(Math.random() * 1e9); // 同一プロンプトでも毎回違う絵にする
+  const url = `${FREE_ENDPOINT}${encodeURIComponent(fullPrompt)}?width=${width}&height=${height}&seed=${seed}&nologo=true&model=flux&enhance=true`;
+
+  console.log("プロバイダ   : Pollinations.ai（無料・キー不要）");
+  console.log(`アスペクト比 : ${ar}（${width}x${height}）`);
+  if (style) console.log(`スタイル     : ${style}`);
+  console.log(`プロンプト   : ${fullPrompt}`);
+  console.log("画像を生成しています…（20〜60秒ほどかかります）");
+
+  let res;
+  try {
+    res = await fetch(url, { signal: AbortSignal.timeout(180000) });
+  } catch (err) {
+    console.error("エラー: Pollinations.ai に接続できませんでした。ネットワークを確認して再実行してください。");
+    console.error(`詳細: ${err?.cause?.message ?? err.message}`);
+    process.exit(1);
+  }
+  if (!res.ok) {
+    console.error(`エラー (HTTP ${res.status}): 無料プロバイダでの生成に失敗しました。`);
+    console.error("混雑している可能性があります。少し待って再実行してください。");
+    process.exit(1);
+  }
+
+  const buffer = Buffer.from(await res.arrayBuffer());
+  if (buffer.length < 10000) {
+    console.error("エラー: 生成結果が画像として小さすぎます（サービス側の一時エラーの可能性）。再実行してください。");
+    process.exit(1);
+  }
+  await mkdir(dirname(outPath), { recursive: true });
+  await writeFile(outPath, buffer);
+
+  console.log("");
+  console.log("生成完了！（無料）");
+  console.log(`  出力先     : ${outPath}`);
+  console.log(`  サイズ     : ${(buffer.length / 1024).toFixed(1)} KB`);
+}
+
 async function generate({ prompt, outPath, style, ar }) {
   const apiKey = await loadApiKey();
   const fullPrompt = buildPrompt(prompt, style);
@@ -247,6 +303,7 @@ async function main() {
   const parsed = parseArgs(process.argv.slice(2));
   if (parsed.mode === "help") return printHelp();
   if (parsed.mode === "list-styles") return printStyles();
+  if (parsed.free) return generateFree(parsed);
   await generate(parsed);
 }
 

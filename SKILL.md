@@ -74,7 +74,20 @@ node scripts/render.mjs decks/<案件名> --pdf    # PNG + 結合PDF
 
 ## 画像・イラストを使う（Phase 3）
 
-### AI写真生成（Gemini・1枚約6円/$0.039）
+### AI写真生成 — 3つのルート（上から順に検討）
+
+| ルート | 費用 | 品質 | 手間 |
+|--------|------|------|------|
+| ① `--free`（Pollinations.ai） | **0円** | 中〜高（1024px上限。全面背景＋スクリムなら十分） | ゼロ。キー不要で即使える |
+| ② Geminiアプリ/ChatGPTで手動生成 | サブスク内 | 高 | 手動（アプリで生成→保存→assets/に置く） |
+| ③ Gemini API（要課金設定） | 約6円/枚 | 最高（2K・画風安定） | キー＋課金設定 |
+
+```bash
+# ① 無料ルート（まずこれ）
+node scripts/genimg.mjs "<日本語で場面を描写>" decks/<案件>/assets/xxx.png --style warm --ar 16:9 --free
+```
+
+### ③ Gemini APIルート（1枚約6円/$0.039）
 ```bash
 # 初回のみ: セットアップ（ブラウザでキー発行ページが開く → 非表示の入力欄にキーを貼り付け）
 node scripts/setup-gemini.mjs
