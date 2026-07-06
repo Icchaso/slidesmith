@@ -53,33 +53,47 @@
 
 `examples/` に11テーマ×サンプルデッキ（計62枚）入り。クローンして自分でレンダリングできます。
 
-## 必要なもの
+## 🚀 かんたんスタート（コピペ2回だけ・プログラミング知識不要）
 
-- [Claude Code](https://claude.com/claude-code)
-- Node.js 18+
-- Google Chrome（レンダリングに使用）
+### 事前に必要なもの（3つ。すでにあれば飛ばしてOK）
 
-## インストール
+| もの | 何それ？ | 入手先 |
+|------|---------|--------|
+| **Claude Code** | AIに作業してもらうためのアプリ（このスキルの本体エンジン） | [公式サイト](https://claude.com/claude-code)の案内どおりに |
+| **Node.js** | スライドを画像に変換する裏方の道具（無料） | [nodejs.org](https://nodejs.org/ja) で「LTS」をダウンロード→ダブルクリックで入れる |
+| **Google Chrome** | 描画に使うブラウザ（無料） | [google.com/chrome](https://www.google.com/chrome/) |
+
+### STEP 1️⃣ ターミナルに1行貼る（初回だけ）
+
+「ターミナル」＝ Macなら Launchpad で「ターミナル」と検索して出てくる黒い画面のアプリです。
+開いたら、下の1行を**まるごとコピーして貼り付けて Enter**：
 
 ```bash
-# Claude Code のスキルとしてインストール
-git clone https://github.com/Icchaso/slidesmith.git ~/.claude/skills/slidesmith
-cd ~/.claude/skills/slidesmith
-npm install
+git clone https://github.com/Icchaso/slidesmith.git ~/.claude/skills/slidesmith && cd ~/.claude/skills/slidesmith && npm install
 ```
 
-## 使い方
+（Windowsの場合は保存先を `%USERPROFILE%\.claude\skills\slidesmith` に読み替えてください）
 
-Claude Code で話しかけるだけ:
+### STEP 2️⃣ Claude Code に話しかける
+
+Claude Code を開いて、こう打つだけ：
 
 ```
-スライド作って。テーマはポップで。台本はこれ↓
-（台本テキストを貼り付け or ファイルパスを渡す）
+スライド作って。テーマはポップで。内容はこれ↓
+（作りたい内容のメモを貼り付け。箇条書きでも殴り書きでもOK）
 ```
 
-Claude が台本を分割 → レイアウト割り当て → HTML生成 → PNG/PDF書き出し → 自動QC → 目視確認まで行います。
+**以上です。** あとはAIが構成を考え、レイアウトを選び、デザインを適用し、
+4K画像とPDFに書き出し、はみ出しチェックまで済ませて納品します。
 
-手動レンダリングも可能:
+### よくある質問
+
+- **Q. テーマが決められない** → 「おまかせで」でOK。内容から自動で選びます
+- **Q. お金はかかる？** → Claude Code の利用料以外は**0円**。AI写真も無料ルート内蔵（高品質を求める場合のみ Gemini API・1枚約6円が任意）
+- **Q. 直したいときは？** → 「表紙の言葉変えて」「もっと派手に」と言うだけ。一言で修正されます
+- **Q. どんなテーマがある？** → 上のギャラリー参照（11種）。「このサイトの雰囲気で」とURLやスクショを渡して新テーマを作らせることもできます
+
+### （上級者向け）手動レンダリング
 
 ```bash
 node scripts/render.mjs examples/pop-sns          # PNG書き出し + QC
